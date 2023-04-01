@@ -5,11 +5,18 @@ import botocore
 import json
 import timeit
 from loguru import logger
+import geopandas as gpd
 
 # Constants
 SECRETS_URL = "https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/ds_code_challenge_creds.json"
 S3_REGION = "af-south-1"
 S3_BUCKET = "cct-ds-code-challenge-input-data"
+
+VALIDATION_FILE_C1 = 'city-hex-polygons-8.geojson'
+VALIDATION_FILE_C2 = 'sr_hex.csv.gz'
+VALIDATION_FILE_C3 = 'city-hex-polygons-8-10.geojson'
+
+QUERY_FILE_C1 = 'city-hex-polygons-8-10.geojson'
 
 def timer_log(func):
     # This function shows the execution time of the inner function
@@ -46,12 +53,11 @@ def get_s3_object_list(s3_client: botocore.client, s3_bucket: str):
     return objects
 
 @timer_log
-def download_s3_object(s3_client: botocore.client, s3_bucket: str, filename: str):
+def download_s3_object(s3_client: botocore.client, s3_bucket: str, filename: str, target_filename: str):
     objects = get_s3_object_list(s3_client, s3_bucket)
-    filename = 'city-hex-polygons-8.geojson'
     fileExists = True if filename in objects else False
     download_complete = False
-    if os.path.exists('./city-hex-polygons-8.geojson'):
+    if os.path.exists(f'./{target_filename}'):
         download_complete = True
     else:
         if fileExists:
@@ -64,16 +70,20 @@ def download_s3_object(s3_client: botocore.client, s3_bucket: str, filename: str
     return download_complete
 
 @timer_log
-def s3_select_query(s3_client: botocore.client, s3_bucket: str, object: str, resolution: int):
+def s3_select_query(s3_client: botocore.client, s3_bucket: str, object: str, resolution: int = None):
+    if resolution:
+        where_clause = f"where rec.properties.resolution = {resolution}"
+    else:
+        where_clause = ""
     response = s3_client.select_object_content(
             Bucket = s3_bucket,
             Key = object,
             ExpressionType = 'SQL',
-            Expression = f"SELECT * from S3Object[*].features[*] rec where rec.properties.resolution = {resolution}", 
+            Expression = f"SELECT * FROM S3Object[*].features[*] rec {where_clause}", 
             InputSerialization = {"JSON": {"Type": "DOCUMENT"}, "CompressionType": "NONE"},
             OutputSerialization = {'JSON': {}}
         )
-    
+        
     return response['Payload']
 
 @timer_log
@@ -86,3 +96,11 @@ def s3_stream_to_dict(query_result: botocore.eventstream):
     response = [json.loads(line) for line in parsed_response.split()]
 
     return response
+
+@timer_log
+def s3_stream_to_dataframe(query_result: botocore.eventstream):
+    df_dict = s3_stream_to_dict(query_result)
+    stream_df = gpd.GeoDataFrame.from_records(df_dict)
+    stream_df['index'] = stream_df['properties'].apply(lambda x : x['index'])
+
+    return stream_df
