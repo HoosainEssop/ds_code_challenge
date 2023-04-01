@@ -1,0 +1,10 @@
+# DIRECTORIES
+ds_venv/
+
+# File Types
+*.csv
+*.geojson
+*.ipynb
+
+# MAC DS_STORE FILES
+.DS_STORE
