@@ -1,5 +1,6 @@
 # DIRECTORIES
 ds_venv/
+downloaded_files/
 
 # File Types
 *.csv

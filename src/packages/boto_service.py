@@ -14,9 +14,9 @@ S3_BUCKET = "cct-ds-code-challenge-input-data"
 
 VALIDATION_FILE_C1 = 'city-hex-polygons-8.geojson'
 VALIDATION_FILE_C2 = 'sr_hex.csv.gz'
-VALIDATION_FILE_C3 = 'city-hex-polygons-8-10.geojson'
 
 QUERY_FILE_C1 = 'city-hex-polygons-8-10.geojson'
+QUERY_FILE_C2 = 'sr.csv.gz'
 
 def timer_log(func):
     # This function shows the execution time of the inner function
@@ -57,7 +57,7 @@ def download_s3_object(s3_client: botocore.client, s3_bucket: str, filename: str
     objects = get_s3_object_list(s3_client, s3_bucket)
     fileExists = True if filename in objects else False
     download_complete = False
-    if os.path.exists(f'./{target_filename}'):
+    if os.path.exists(f'./downloaded_files/{target_filename}'):
         download_complete = True
     else:
         if fileExists:
