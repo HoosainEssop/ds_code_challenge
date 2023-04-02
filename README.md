@@ -34,11 +34,11 @@ A python script has been developed for the challenge. Titled as:
 - Challenge 1 : src/Submission_1.py
 
 Steps taken In Solution:
-- 1. init client
-- 2. Get Challenge File Data into GeoDataFrame: city-hex-polygons-8-10.geojson WHERE resolution = 8
-- 3. Get Validation File Data into GeoDataFrame:  city-hex-polygons-8.geojson
-- 4. Validate Stream/Challenge Data aginst validation data
-- 5. Log Challenge Status
+1. init client
+2. Get Challenge File Data into GeoDataFrame: city-hex-polygons-8-10.geojson WHERE resolution = 8
+3. Get Validation File Data into GeoDataFrame:  city-hex-polygons-8.geojson
+4. Validate Stream/Challenge Data aginst validation data
+5. Log Challenge Status
 
 ```sh
 # Execute Challenge 1 Submission
