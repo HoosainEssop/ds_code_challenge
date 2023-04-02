@@ -1,3 +1,10 @@
+# This script is used to answer Challenge 1 in the following steps
+# 1. init client
+# 2. Get Challenge File Data into GeoDataFrame: city-hex-polygons-8-10.geojson WHERE resolution = 8
+# 3. Get Validation File Data into GeoDataFrame:  city-hex-polygons-8.geojson
+# 4. Validate Stream/Challenge Data aginst validation data
+# 5. Log Challenge Status
+
 from packages.boto_service import (S3_REGION,
                                    S3_BUCKET,
                                    QUERY_FILE_C1,
@@ -10,7 +17,6 @@ import pandas as pd
 from loguru import logger
 import timeit
 import os
-
 
 def validation_run():
     # init client

@@ -1,3 +1,24 @@
+# This script is used to answer Challenge 2 in the following steps:
+# 1. init client
+# 2. Get Challenge File service request Data into GeoDataFrame: sr.csv.gz
+# 3. Get Challenge 1 Validation File Data into GeoDataFrame: city-hex-polygons-8.geojson
+# 4. Get Challenge 2 Validation File Data into GeoDataFrame: sr_hex.csv.gz
+# 5. Overlay polygons to get an understanding wrt the error tolerance
+    # Code appropriated from : https://github.com/uber/h3-py-notebooks/blob/master/notebooks/unified_data_layers.ipynb
+    # Steps:
+        # calculale the h3 index's for the lat lon pair at a given resolution
+        # remove records where lat and lon is null, resulting in a 0 hex value
+        # Create a frame that contains the count of each hex index
+        # find center of hex for visualization
+        # Create the geodataframe for the aggregated service requests
+        # Create a geodataframe for the service requests
+        # Plot the two geodataframes on the same axis.
+    # result: identified 2 missing matches at point (-34.044257, 18.774378) and 1 at point (-33.904955, 18.723060)
+# 6. Set an Error Threshold of 1%
+# 7. Calculate error records percentage after joining the sr dataset to the city-hex-polygons-8 dataset
+# 8. Compared the result of the join in step 7 to the Validation dataframe in step 4
+# 9. Log Challenge Status
+
 from packages.boto_service import (S3_REGION,
                                    S3_BUCKET,
                                    QUERY_FILE_C2,
@@ -38,6 +59,7 @@ def read_gzip_df(filename: str):
 if __name__ == '__main__':
     start = timeit.default_timer()
 
+    # Init client
     s3_client = init_s3_client(S3_REGION)
 
     # Get Challenge file
@@ -62,11 +84,12 @@ if __name__ == '__main__':
     sr_hex_df = read_gzip_df(f"downloaded_files/{VALIDATION_FILE_C2}")
 
     # Overlay polygons to get an understanding wrt the error tolerance
+    # Code appropriated from : https://github.com/uber/h3-py-notebooks/blob/master/notebooks/unified_data_layers.ipynb
     logger.debug("Download Validation file for challenge 2")
     Res_SIZE = 8
     hex_col = f'hex{Res_SIZE}'
 
-    # calucalte the h3 index's for the lat lon pair at a given resolution
+    # calculale the h3 index's for the lat lon pair at a given resolution
     logger.debug("Transform the Service Request Data")
     sr_df[hex_col] = sr_df.apply(lambda x: h3.geo_to_h3(x.latitude, x.longitude, Res_SIZE), axis = 1)
 
@@ -76,7 +99,7 @@ if __name__ == '__main__':
     # Create a frame that contains the count of each hex index
     sr_ind_cnt_df = sr_df.groupby(hex_col).size().to_frame('cnt').reset_index()
 
-    #find center of hex for visualization
+    # find center of hex for visualization
     sr_ind_cnt_df['lat'] = sr_ind_cnt_df[hex_col].apply(lambda x: h3.h3_to_geo(x)[0])
     sr_ind_cnt_df['lng'] = sr_ind_cnt_df[hex_col].apply(lambda x: h3.h3_to_geo(x)[1])
 
@@ -86,7 +109,7 @@ if __name__ == '__main__':
     # Create a geodataframe for the service requests
     sr_gdf = gpd.GeoDataFrame(sr_df, geometry=gpd.points_from_xy(sr_df['longitude'], sr_df['latitude']))
 
-    # Overlay polygons to get an understanding wrt the error tolerance
+    # Plot Overlayed Figure
     # fig, ax = plt.subplots(figsize=(20, 15))
     # sr_ind_cnt_gdf.plot(ax=ax, column='cnt', alpha=0.4)
     # # sr_gdf.plot(ax=ax, color="red", alpha=0.4)

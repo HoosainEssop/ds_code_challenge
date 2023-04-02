@@ -1,3 +1,5 @@
+# This script is used to test the integration to the AWS Client and S3 resource
+
 import boto3
 import botocore
 import requests
@@ -8,7 +10,7 @@ SECRETS_URL = "https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.
 S3_REGION = "af-south-1"
 S3_BUCKET = "cct-ds-code-challenge-input-data"
 
-
+# Test integration to create client using provided credentials
 def init_s3_client(s3_region : str):
     response = requests.get(SECRETS_URL).json()
     keys = response['s3']
